@@ -2,12 +2,13 @@ from celery import Celery
 from logging import getLogger
 import functools
 import gevent
+import gevent.thread
 
 logger = getLogger(__name__)
 app = Celery('test-gevent',
              broker="amqp://guest:guest@localhost:5672",
              task_ignore_result=True,
-             broker_pool_limit=3)
+             broker_pool_limit=2)
 
 
 
@@ -31,13 +32,14 @@ def log(i):
     logger.info("Got number %s", i)
 
 @app.task
-@timeout(1)
 def delay_in_loop():
-    while True:
+    import threading
+    for i in range(10):
         log.apply_async(args=(gevent.getcurrent().minimal_ident,) , queue='other')
-        logger.info("[%s] Queue Type %s",
+        logger.info("[greenthread %s] [current thread %s]",
                     gevent.getcurrent().minimal_ident,
-                    type(app.producer_pool._resource))
+                    gevent.thread.get_native_id()
+                    )
 
 
 @app.task
