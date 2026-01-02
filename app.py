@@ -7,8 +7,8 @@ import gevent.thread
 logger = getLogger(__name__)
 app = Celery('test-gevent',
              broker="amqp://guest:guest@localhost:5672",
-             task_ignore_result=True,
-             broker_pool_limit=2)
+             task_ignore_result=True
+             )
 
 
 
